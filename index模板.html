@@ -13,23 +13,20 @@
 <body>
 
     <div class="wrapper clearfix">
-        <div class="header">
-            <span class="title">021800317</span>
-            <!-- <button class="run btn btn-primary">生成</button> -->
-        </div>
+        
 		<div class="row bg"></div>
         <div class="main clearfix">
             <div class="text-container">
                 <div class="description">
-                    <span class="tip">请输入学术家族树</span>
-                    <button class="run btn btn-primary btn-sm" onclick="analyse()">生成</button>
+                    <span class="tip"><h3><font color="ghostwhite">请输入学术家族树</h3></span>
+                    <button style="background-color: powderblue;" class="run btn btn-primary btn-sm" onclick="analyse()"><h6>一键生成：）</h6></button>
                     
                 </div>
-                <textarea cols="30" rows="25" class="input-area form-control"></textarea>
+                <textarea cols="30" rows="10" class="input-area form-control"></textarea>
             </div>
             <div class="graph-wrapper">
                 <!-- <div id="main" style="width: 100%;height:300px;"></div> -->
-                <div id="graph" style="display: none;"></div>
+                <div id="graph" style="width: 100%;height:350px;"></div>
             </div>
         </div>
     </div>
@@ -39,12 +36,12 @@
 <style>
     * {
         margin: 0;/*header*/
-        padding: -10px;/*header*/
-        /* border: 1px solid #66ccff */
+        padding:-10px;
+        border: 0.00001px inset white ;
     }
 
     body {
-       	background-color: blue;
+       /* background-color: rgb(192,192,192);*/
 	   margin: 0;
 		padding: 0;
 		font-family: sans-serif;
@@ -97,15 +94,18 @@
     .graph-wrapper {
         float: right;
         height: 100%;
-        overflow-y: scroll;
+        overflow-y: visible;
+		overflow-x: visible;
         width: 55%;
 
     }
 
     .input-area {/*26*/
         height: 100%;
-        overflow-y: scroll;
+        overflow-y: visible;
+		overflow-x: visible;
         width: 100%;
+		background: url("time.jpg");
     }
 
     .header {/*15*/
@@ -116,7 +116,7 @@
         height: 60px;
         align-items: center;
         padding-left: 2%;
-        color: #fff;
+        color: red;
         font-size: 20px;
         display: flex;
         justify-content: space-between;
@@ -124,7 +124,7 @@
     }
 
     .description {/*21*/
-        margin-bottom: 10px;
+        margin-bottom: 100px;
     }
 
     .run {/*23*/
@@ -134,59 +134,58 @@
 
     .tip {
         position: relative;
-        top: 5px;
+        left: 1px;
+		top: 100px;
     }
 </style>
 <script>
     function analyse() {
         try {
-            $(".graph-wrapper").empty()/*移除graph-wrapper内容*/
-            // throw new Error('error');
-            var text = $(".input-area").val();/*26输入框的内容*/
-            var trees = text.split('\n\n\n');/*从'两行空格分割建树*/
-            console.log(trees.length)
-            trees.forEach((treeText) => {/*一个循环*/
-                let lines = treeText.split('\n');/*每一行*/
+            $(".graph-wrapper").empty()
+            var text = $(".input-area").val();
+            var trees = text.split('\n\n\n');
+            for(let k=0;k<trees.length;k++){
+                let page = trees[k].split('\n\n');/*每一行*/
                 let data = new Object();
                 let map = new Map();
-                data.name = lines[0];/*120*//*name为一行*/
-                if (lines[0].slice(0, 2) !== '导师') {/*前两个字*/
-                    throw new Error('ERROR: 导师行不正确,请注意每组数据之间有两行空行');
-                }
-                data.children = new Array();/*数组*/
-                console.log(lines.length);
-                for (let i = 1; i < lines.length; i++) {
-                   if (lines[i] === '') continue;/*必要*/
-                    if (!isNaN(lines[i].slice(0, 4))) {/*是否为数字*/
+                data.children = new Array();
+                for(let j=0;j<page.length;j++)
+                {let lines=page[j].split('\n');
+                for (let i = 0; i < lines.length; i++) {
+
+                   if (lines[i] === '') continue;
+                   if(lines[i].slice(0,2)=="导师")
+                        {data.name = lines[i].split('：')[1];}
+                    else if (!isNaN(lines[i].slice(0, 4))) {
                         var children = new Object();
                         children.name = lines[i].split('：')[0];
-						/*'：'分割，0表示之前，1表示之后*/
                         children.children = new Array();/*子数组*/
+                        item=lines[i].split('：')[1].split('、');
                         lines[i].split('：')[1].split('、').forEach(item => {
                             var t = new Object();
                             t.name = item;
-                            t.value = '暂无';
+                            t.value = 'NONE';
                             children.children.push(t);
                             map.set(item, t);/*set方法可以向Map对象添加新元素。*/
                         })
                         data.children.push(children);
-                    } else {
-                        let [name, skill] = lines[i].split('：')
+                    }
+                     else {
+                        let [name, skill] = lines[i].split('：');
+                        children.children.value=skill;
                         if (!skill) {
                             throw new Error('ERROR: 技能轨迹输入不正确');
                         }
                         if (!map.get(name)) {/*Map.get() 方法返回指定键所映射的值*/
                             throw new Error("学生 " + name + "不存在")
                         }
+                       
                         map.get(name).value = skill;
                     }
-                }
-                // console.log(data);输出图
+                }}
                 const domText = '<div class="graph" style="width: 100%;height:350px;"></div>';
                 $(".graph-wrapper").append(domText);/*28append函数：graph-wrapper后插入domText*/
-                var texs = jQuery.parseJSON(JSON.stringify(data));/*120*/
-				/*(JSON.stringify将 data 值转换为 JSON 字符串*/
-                console.log(texs);
+
 
                let graphlist = document.getElementsByClassName("graph");
 				/*所有graph作为graphlist内容*/
@@ -210,7 +209,7 @@
                     },
                     series: [{
                         type: 'tree',
-                        data: [texs],
+                        data: [data],
 
                           top: '10%',
                           left: '7%',
@@ -223,10 +222,11 @@
 						   initialTreeDepth: 3,
 
 						  lineStyle: {
-					       width: 2
+					       width: 2,
 							   },
 
                         label: {
+						 backgroundColor:'#12' ,
                             position: 'left',
                             verticalAlign: 'middle',
                             align: 'right',
@@ -235,10 +235,22 @@
 
                         leaves: {
                             label: {
+						 backgroundColor: '#fff',
                                 position: 'right',
                                 verticalAlign: 'middle',
                                 align: 'left'
-                            }
+                            },
+							
+						 itemStyle: {
+						                // emphasis：英文意思是 强调;着重;（轮廓、图形等的）鲜明;突出，重读
+						                // emphasis：设置鼠标放到哪一块扇形上面的时候，扇形样式、阴影
+						                emphasis: {
+						                  shadowBlur: 10,
+						                  shadowOffsetX: 0,
+						                  shadowColor: 'rgba(30, 144, 255，0.5)'
+						                }
+						              }
+						
                         },
 
                         expandAndCollapse: true,
@@ -249,7 +261,7 @@
                 window.addEventListener('resize', function () {
                     myChart.resize()
                 });
-            })
+            }
         } catch (error) {
             const errorDom = '<div class="graph" style="width: 100%;height:350px;margin-top: 20px;color: red">' + error
                 .message + '</div>';
